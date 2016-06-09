@@ -1,12 +1,37 @@
-import { createStore, applyMiddleware } from 'redux'
-import thunk from 'redux-thunk'
-import rootReducer from '../reducers'
+import React from 'react'
 
-export default function configureStore(preloadedState) {
+import { createStore, combineReducers, compose, applyMiddleware } from 'redux'
+import { createDevTools } from 'redux-devtools'
+import LogMonitor from 'redux-devtools-log-monitor'
+import DockMonitor from 'redux-devtools-dock-monitor'
+
+import { routerReducer, routerMiddleware } from 'react-router-redux'
+
+export const DevTools = createDevTools(
+  <DockMonitor toggleVisibilityKey="ctrl-h" changePositionKey="ctrl-q">
+    <LogMonitor theme="tomorrow" preserveScrollTop={false} />
+  </DockMonitor>
+)
+
+export function configureStore(history, initialState) {
+  const reducer = combineReducers({
+    routing: routerReducer
+  })
+
+  let devTools = []
+  if (typeof document !== 'undefined') {
+    devTools = [ DevTools.instrument() ]
+  }
+
   const store = createStore(
-    rootReducer,
-    preloadedState,
-    applyMiddleware(thunk)
+    reducer,
+    initialState,
+    compose(
+      applyMiddleware(
+        routerMiddleware(history)
+      ),
+      ...devTools
+    )
   )
 
   if (module.hot) {

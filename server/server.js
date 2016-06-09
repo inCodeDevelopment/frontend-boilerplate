@@ -1,8 +1,9 @@
 /* eslint-disable no-console, no-use-before-define */
 
-import path from 'path'
+// import path from 'path'
 import Express from 'express'
-import qs from 'qs'
+import serialize from 'serialize-javascript'
+// import qs from 'qs'
 
 import webpack from 'webpack'
 import webpackDevMiddleware from 'webpack-dev-middleware'
@@ -12,10 +13,15 @@ import webpackConfig from '../webpack.config'
 import React from 'react'
 import { renderToString } from 'react-dom/server'
 import { Provider } from 'react-redux'
+import { createMemoryHistory, match, RouterContext } from 'react-router'
+import { syncHistoryWithStore } from 'react-router-redux'
 
-import configureStore from '../shared/store/configureStore'
-import App from '../shared/containers/App'
-import { fetchCounter } from '../shared/api/counter'
+// import { configureStore } from './store'
+import routes from '../shared/routes'
+
+import { configureStore } from '../shared/store/configureStore'
+// import App from '../shared/containers/App'
+// import { fetchCounter } from '../shared/api/counter'
 
 const app = new Express()
 const port = 3000
@@ -25,54 +31,38 @@ const compiler = webpack(webpackConfig)
 app.use(webpackDevMiddleware(compiler, { noInfo: true, publicPath: webpackConfig.output.publicPath }))
 app.use(webpackHotMiddleware(compiler))
 
-// This is fired every time the server side receives a request
-app.use(handleRender)
+const HTML = ({ content, store }) => (
+  <html>
+    <body>
+      <div id="root" dangerouslySetInnerHTML={{ __html: content }}/>
+      <div id="devtools"/>
+      <script dangerouslySetInnerHTML={{ __html: `window.__initialState__=${serialize(store.getState())};` }}/>
+      <script src="/static/bundle.js"/>
+    </body>
+  </html>
+)
 
-function handleRender(req, res) {
-  // Query our mock API asynchronously
-  fetchCounter(apiResult => {
-    // Read the counter from the request, if provided
-    const params = qs.parse(req.query)
-    const counter = parseInt(params.counter, 10) || apiResult || 0
+app.use(function (req, res) {
+  const memoryHistory = createMemoryHistory(req.url)
+  const store = configureStore(memoryHistory)
+  const history = syncHistoryWithStore(memoryHistory, store)
 
-    // Compile an initial state
-    const preloadedState = { counter }
+  match({ history, routes, location: req.url }, (error, redirectLocation, renderProps) => {
+    if (error) {
+      res.status(500).send(error.message)
+    } else if (redirectLocation) {
+      res.redirect(302, redirectLocation.pathname + redirectLocation.search)
+    } else if (renderProps) {
+      const content = renderToString(
+        <Provider store={store}>
+          <RouterContext {...renderProps}/>
+        </Provider>
+      )
 
-    // Create a new Redux store instance
-    const store = configureStore(preloadedState)
-
-    // Render the component to a string
-    const html = renderToString(
-      <Provider store={store}>
-        <App />
-      </Provider>
-    )
-
-    // Grab the initial state from our Redux store
-    const finalState = store.getState()
-
-    // Send the rendered page back to the client
-    res.send(renderFullPage(html, finalState))
+      res.send('<!doctype html>\n' + renderToString(<HTML content={content} store={store}/>))
+    }
   })
-}
-
-function renderFullPage(html, preloadedState) {
-  return `
-    <!doctype html>
-    <html>
-      <head>
-        <title>Redux Universal Example</title>
-      </head>
-      <body>
-        <div id="app">${html}</div>
-        <script>
-          window.__PRELOADED_STATE__ = ${JSON.stringify(preloadedState)}
-        </script>
-        <script src="/static/bundle.js"></script>
-      </body>
-    </html>
-    `
-}
+})
 
 app.listen(port, (error) => {
   if (error) {
