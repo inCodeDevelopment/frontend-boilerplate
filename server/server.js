@@ -16,12 +16,9 @@ import { Provider } from 'react-redux'
 import { createMemoryHistory, match, RouterContext } from 'react-router'
 import { syncHistoryWithStore } from 'react-router-redux'
 
-// import { configureStore } from './store'
 import routes from '../shared/routes'
-
 import { configureStore } from '../shared/store/configureStore'
-// import App from '../shared/containers/App'
-// import { fetchCounter } from '../shared/api/counter'
+import fetchComponentData from '../shared/lib/fetchComponentData'
 
 const app = new Express()
 const port = 3000
@@ -48,19 +45,25 @@ app.use(function (req, res) {
   const history = syncHistoryWithStore(memoryHistory, store)
 
   match({ history, routes, location: req.url }, (error, redirectLocation, renderProps) => {
-    if (error) {
-      res.status(500).send(error.message)
-    } else if (redirectLocation) {
-      res.redirect(302, redirectLocation.pathname + redirectLocation.search)
-    } else if (renderProps) {
-      const content = renderToString(
-        <Provider store={store}>
-          <RouterContext {...renderProps}/>
-        </Provider>
-      )
+    fetchComponentData(store.dispatch, renderProps.components, renderProps.params)
+      .then(() => {
+        if (error) {
+          res.status(500).send(error.message)
+        } else if (redirectLocation) {
+          res.redirect(302, redirectLocation.pathname + redirectLocation.search)
+        } else if (renderProps) {
+          const content = renderToString(
+            <Provider store={store}>
+              <RouterContext {...renderProps}/>
+            </Provider>
+          )
 
-      res.send('<!doctype html>\n' + renderToString(<HTML content={content} store={store}/>))
-    }
+          res.send('<!doctype html>\n' + renderToString(<HTML content={content} store={store}/>))
+        }
+      })
+      .catch((error) => {
+        res.status(500).send(error.message)
+      })
   })
 })
 

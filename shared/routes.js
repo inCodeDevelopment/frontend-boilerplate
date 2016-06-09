@@ -1,20 +1,30 @@
-import React from 'react'
+import React, { Component } from 'react'
 import { Route, IndexRoute, Link } from 'react-router'
 
-const App = ({ children }) => (
-  <div>
-    <header>
-      Links:
-      {' '}
-      <Link to="/">Home</Link>
-      {' '}
-      <Link to="/foo">Foo</Link>
-      {' '}
-      <Link to="/bar">Bar</Link>
-    </header>
-    {children}
-  </div>
-)
+import { loadPosts } from './actions'
+
+class App extends Component {
+  static needs = [
+    loadPosts
+  ]
+
+  render() {
+    return (
+      <div>
+        <header>
+          Links:
+          {' '}
+          <Link to="/">Home</Link>
+          {' '}
+          <Link to="/foo">Foo</Link>
+          {' '}
+          <Link to="/bar">Bar</Link>
+        </header>
+        {this.props.children}
+      </div>
+    )
+  }
+}
 
 const Home = () => (<div>Home!</div>)
 const Foo = () => (<div>Foo!</div>)
