@@ -7,7 +7,7 @@ import DockMonitor from 'redux-devtools-dock-monitor'
 import { routerReducer, routerMiddleware } from 'react-router-redux'
 import promiseMiddleware from 'redux-promise'
 
-import posts from '../reducers/posts'
+import blog from '../reducers/posts'
 
 export const DevTools = createDevTools(
   <DockMonitor toggleVisibilityKey="ctrl-h" changePositionKey="ctrl-q">
@@ -15,10 +15,10 @@ export const DevTools = createDevTools(
   </DockMonitor>
 )
 
-export function configureStore(history, initialState = { posts: [] }) {
+export function configureStore(history, initialState = {}) {
   const reducer = (...args) => {
     return combineReducers({
-      posts,
+      blog,
       routing: routerReducer
     })(...args)
   }

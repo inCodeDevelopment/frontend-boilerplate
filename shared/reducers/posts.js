@@ -1,8 +1,8 @@
 import { handleActions } from 'redux-actions'
-import { setPosts, loadPosts } from '../actions'
+import { loadPosts, loadPost } from '../actions'
 
 const reducer = handleActions({
-  [setPosts]: (state, action) => action.payload,
-  [loadPosts]: (state, action) => action.payload
+  [loadPost]: (state, action) => ({ post: action.payload }),
+  [loadPosts]: (state, action) => ({ posts: action.payload })
 }, [])
 export default reducer
