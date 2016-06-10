@@ -17,7 +17,7 @@ class Post extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.posts !== this.props.posts) {
+    if (nextProps.post !== this.props.post) {
       let { dispatch, params } = this.props
       dispatch(loadPost(params.id))
     }
