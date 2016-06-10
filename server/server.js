@@ -58,7 +58,6 @@ app.use(function (req, res) {
             </Provider>
           )
 
-          console.log('STORE STATE', store.getState(), renderProps.params)
           res.send('<!doctype html>\n' + renderToString(<HTML content={content} store={store}/>))
         }
       })
