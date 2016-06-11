@@ -1,9 +1,9 @@
 /* eslint-disable no-console, no-use-before-define */
 
-// import path from 'path'
 import Express from 'express'
 import serialize from 'serialize-javascript'
-// import qs from 'qs'
+import cookie from 'cookie-parser'
+import jwt from 'express-jwt'
 
 import webpack from 'webpack'
 import webpackDevMiddleware from 'webpack-dev-middleware'
@@ -20,8 +20,26 @@ import routes from '../shared/routes'
 import { configureStore } from '../shared/store/configureStore'
 import fetchComponentData from '../shared/lib/fetchComponentData'
 
+import config from './config'
+
 const app = new Express()
-const port = 3000
+const port = config.server.port
+
+app.use(cookie())
+app.use(jwt({
+  secret: config.auth.JWT_SECRET,
+  credentialsRequired: false,
+  getToken: (req) => {
+    if (req.cookies && req.cookies.token) {
+      return req.cookies.token
+    } else if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+      return req.headers.authorization.split(' ')[1]
+    } else if (req.query && req.query.token) {
+      return req.query.token
+    }
+    return null
+  }
+}))
 
 // Use this middleware to set up hot module reloading via webpack.
 const compiler = webpack(webpackConfig)
