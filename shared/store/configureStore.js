@@ -7,6 +7,7 @@ import DockMonitor from 'redux-devtools-dock-monitor'
 import { routerReducer, routerMiddleware } from 'react-router-redux'
 import promiseMiddleware from 'redux-promise'
 
+import user from '../reducers/user'
 import blog from '../reducers/posts'
 
 export const DevTools = createDevTools(
@@ -18,6 +19,7 @@ export const DevTools = createDevTools(
 export function configureStore(history, initialState = {}) {
   const reducer = (...args) => {
     return combineReducers({
+      user,
       blog,
       routing: routerReducer
     })(...args)

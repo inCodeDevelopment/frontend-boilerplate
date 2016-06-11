@@ -19,6 +19,7 @@ import { syncHistoryWithStore } from 'react-router-redux'
 import routes from '../shared/routes'
 import { configureStore } from '../shared/store/configureStore'
 import fetchComponentData from '../shared/lib/fetchComponentData'
+import { login } from '../shared/actions/user'
 
 import config from './config'
 
@@ -61,6 +62,10 @@ app.use(function (req, res) {
   const memoryHistory = createMemoryHistory(req.url)
   const store = configureStore(memoryHistory)
   const history = syncHistoryWithStore(memoryHistory, store)
+
+  if (req.user) {
+    store.dispatch(login(req.user))
+  }
 
   match({ history, routes, location: req.url }, (error, redirectLocation, renderProps) => {
     fetchComponentData(store.dispatch, renderProps.components, renderProps.params)
