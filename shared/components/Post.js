@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react'
 import { connect } from 'react-redux'
+import Helmet from 'react-helmet'
 import { loadPost } from '../actions'
 
 class Post extends Component {
@@ -28,6 +29,7 @@ class Post extends Component {
     if (post) {
       return (
         <div>
+          <Helmet title={post.title} />
           <h2>{post.title}</h2>
           <div>{post.body}</div>
         </div>

@@ -1,6 +1,7 @@
 import React, { Component, PropTypes } from 'react'
 import { Link } from 'react-router'
 import { connect } from 'react-redux'
+import Helmet from 'react-helmet'
 import { loadPosts } from '../actions'
 
 class Posts extends Component {
@@ -30,6 +31,7 @@ class Posts extends Component {
     if (posts) {
       return (
         <div>
+          <Helmet title="Blog" />
           <h2>Blog:</h2>
           {posts.length ? (
             <ul>

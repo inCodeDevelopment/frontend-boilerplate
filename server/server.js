@@ -17,6 +17,7 @@ import { renderToString } from 'react-dom/server'
 import { Provider } from 'react-redux'
 import { createMemoryHistory, match, RouterContext } from 'react-router'
 import { syncHistoryWithStore } from 'react-router-redux'
+import Helmet from 'react-helmet'
 
 import routes from '../shared/routes'
 import { configureStore } from '../shared/store/configureStore'
@@ -62,16 +63,23 @@ app.post('/login', body.json(), (req, res) => {
   res.json({ ...user, token })
 })
 
-const HTML = ({ content, store }) => (
-  <html>
-    <body>
-      <div id="root" dangerouslySetInnerHTML={{ __html: content }}/>
-      <div id="devtools"/>
-      <script dangerouslySetInnerHTML={{ __html: `window.__initialState__=${serialize(store.getState())};` }}/>
-      <script src="/static/bundle.js"/>
-    </body>
-  </html>
-)
+const HTML = ({ content, store, head }) => {
+  return (
+    <html>
+      <head>
+        {head.title.toComponent()}
+        {head.meta.toComponent()}
+        {head.link.toComponent()}
+      </head>
+      <body>
+        <div id="root" dangerouslySetInnerHTML={{ __html: content }}/>
+        <div id="devtools"/>
+        <script dangerouslySetInnerHTML={{ __html: `window.__initialState__=${serialize(store.getState())};` }}/>
+        <script src="/static/bundle.js"/>
+      </body>
+    </html>
+  )
+}
 
 app.use(function (req, res) {
   const memoryHistory = createMemoryHistory(req.url)
@@ -95,8 +103,10 @@ app.use(function (req, res) {
               <RouterContext {...renderProps}/>
             </Provider>
           )
+          let head = Helmet.rewind()
 
-          res.send('<!doctype html>\n' + renderToString(<HTML content={content} store={store}/>))
+          res.send('<!doctype html>\n' +
+            renderToString(<HTML content={content} store={store} head={head}/>))
         }
       })
       .catch((error) => {
