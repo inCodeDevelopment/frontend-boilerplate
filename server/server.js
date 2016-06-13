@@ -3,7 +3,9 @@
 import Express from 'express'
 import serialize from 'serialize-javascript'
 import cookie from 'cookie-parser'
+import body from 'body-parser'
 import jwt from 'express-jwt'
+import jsonwebtoken from 'jsonwebtoken' // using in demo auth route only
 
 import webpack from 'webpack'
 import webpackDevMiddleware from 'webpack-dev-middleware'
@@ -31,14 +33,16 @@ app.use(jwt({
   secret: config.auth.JWT_SECRET,
   credentialsRequired: false,
   getToken: (req) => {
+    let token = null
     if (req.cookies && req.cookies.token) {
-      return req.cookies.token
+      token = req.cookies.token
     } else if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
-      return req.headers.authorization.split(' ')[1]
+      token = req.headers.authorization.split(' ')[1]
     } else if (req.query && req.query.token) {
-      return req.query.token
+      token = req.query.token
     }
-    return null
+    req.token = token
+    return token
   }
 }))
 
@@ -46,6 +50,17 @@ app.use(jwt({
 const compiler = webpack(webpackConfig)
 app.use(webpackDevMiddleware(compiler, { noInfo: true, publicPath: webpackConfig.output.publicPath }))
 app.use(webpackHotMiddleware(compiler))
+
+// Demo auth route
+app.post('/login', body.json(), (req, res) => {
+  let id = Math.round(Math.random() * 10000)
+  let user = {
+    id,
+    email: req.body.email
+  }
+  let token = jsonwebtoken.sign(user, config.auth.JWT_SECRET)
+  res.json({ ...user, token })
+})
 
 const HTML = ({ content, store }) => (
   <html>
@@ -64,7 +79,7 @@ app.use(function (req, res) {
   const history = syncHistoryWithStore(memoryHistory, store)
 
   if (req.user) {
-    store.dispatch(login(req.user))
+    store.dispatch(login({ ...req.user, token: req.token }))
   }
 
   match({ history, routes, location: req.url }, (error, redirectLocation, renderProps) => {

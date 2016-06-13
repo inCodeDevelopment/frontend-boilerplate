@@ -1,11 +1,15 @@
 import React, { Component } from 'react'
+import { connect } from 'react-redux'
 import { Link } from 'react-router'
+import UserBar from '../components/UserBar'
 
 class App extends Component {
   render() {
     return (
       <div>
         <header>
+          <UserBar user={this.props.user} dispatch={this.props.dispatch} />
+          <br />
           Links:
           {' '}
           <Link to="/">Home</Link>
@@ -18,5 +22,6 @@ class App extends Component {
   }
 }
 
-
-export default App
+export default connect(
+  state => ({ user: state.user })
+)(App)
