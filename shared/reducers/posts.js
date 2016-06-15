@@ -1,8 +1,12 @@
-import { handleActions } from 'redux-actions'
-import { loadPosts, loadPost } from '../actions'
+import { SET_POSTS, SET_POST } from '../actions'
 
-const reducer = handleActions({
-  [loadPost]: (state, action) => ({ post: action.payload }),
-  [loadPosts]: (state, action) => ({ posts: action.payload })
-}, [])
-export default reducer
+export default function posts(state = {}, action) {
+  switch (action.type) {
+    case SET_POST:
+      return { ...state, post: action.post }
+    case SET_POSTS:
+      return { ...state, posts: action.posts }
+    default:
+      return state
+  }
+}

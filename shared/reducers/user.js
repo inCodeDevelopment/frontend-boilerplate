@@ -1,9 +1,12 @@
-import { handleActions } from 'redux-actions'
-import { login, logout, auth } from '../actions/user'
+import { LOGIN, LOGOUT } from '../actions/user'
 
-const reducer = handleActions({
-  [login]: (state, action) => ({ ...state, ...action.payload }),
-  [logout]: () => null,
-  [auth]: (state, action) => ({ ...state, ...action.payload })
-}, null)
-export default reducer
+export default function user(state = null, action) {
+  switch (action.type) {
+    case LOGIN:
+      return { ...state, ...action.user }
+    case LOGOUT:
+      return null
+    default:
+      return state
+  }
+}

@@ -1,4 +1,7 @@
-import { createAction } from 'redux-actions'
+export const SET_POST = 'blog/SET_POST'
+export const SET_POSTS = 'blog/SET_POSTS'
+export const LOAD_POSTS = 'blog/LOAD_POSTS'
+export const LOAD_POST = 'blog/LOAD_POST'
 
 const POSTS = [
   {
@@ -13,15 +16,31 @@ const POSTS = [
   }
 ]
 
-// mock api
-export const loadPosts = createAction('posts/LOAD_POSTS', () => {
-  return new Promise(resolve => setTimeout(() => {
-    resolve(POSTS)
-  }, 100))
-})
+export function setPost(post) {
+  return {
+    type: SET_POST,
+    post
+  }
+}
 
-export const loadPost = createAction('posts/LOAD_POST', (id) => {
-  return new Promise(resolve => setTimeout(() => {
-    resolve(POSTS.filter(post => post.id == id).pop())
+export function setPosts(posts) {
+  return {
+    type: SET_POSTS,
+    posts
+  }
+}
+
+// mock api
+export function loadPosts() {
+  return dispatch => new Promise(resolve => setTimeout(() => {
+    dispatch(setPosts(POSTS))
+    resolve()
   }, 100))
-})
+}
+
+export function loadPost(id) {
+  return dispatch => new Promise(resolve => setTimeout(() => {
+    dispatch(setPost(POSTS.filter(post => post.id == id).pop()))
+    resolve()
+  }, 100))
+}

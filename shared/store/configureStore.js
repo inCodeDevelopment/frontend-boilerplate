@@ -5,7 +5,7 @@ import { createDevTools } from 'redux-devtools'
 import LogMonitor from 'redux-devtools-log-monitor'
 import DockMonitor from 'redux-devtools-dock-monitor'
 import { routerReducer, routerMiddleware } from 'react-router-redux'
-import promiseMiddleware from 'redux-promise'
+import thunk from 'redux-thunk'
 
 import user from '../reducers/user'
 import blog from '../reducers/posts'
@@ -30,9 +30,12 @@ export function configureStore(history, initialState = {}) {
     devTools = [ DevTools.instrument() ]
   }
 
-  const store = applyMiddleware(promiseMiddleware)(createStore)(reducer, initialState, compose(
+  const store = createStore(reducer, initialState, compose(
     applyMiddleware(
       routerMiddleware(history)
+    ),
+    applyMiddleware(
+      thunk
     ),
     ...devTools
   ))
